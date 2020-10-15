@@ -15,3 +15,16 @@ libptzf = library('ptzf-' + proj_ver_short, ptzf_source,
   include_directories: ptzf_incdir,
   install: true,
 )
+
+ptzf_dep = declare_dependency(
+  link_with: libptzf,
+  include_directories: ptzf_incdir,
+  dependencies: ptzf_deps,
+)
+
+pkg = import('pkgconfig')
+ptzf_pc = pkg.generate(libptzf,
+  description: project_description,
+  url: project_url,
+  install_dir: get_option('datadir') / 'pkgconfig',
+)
