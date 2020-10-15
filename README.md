@@ -9,8 +9,8 @@ sudo apt install \
   libboost-log-dev \
   libboost-system-dev \
   libserial-dev \
-  meson \
   ninja-build
+pip3 install --upgrade meson
 ```
 
 # Installation:

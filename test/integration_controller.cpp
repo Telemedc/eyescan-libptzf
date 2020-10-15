@@ -1,8 +1,12 @@
 #include "controller.h"
+#include "utils.h"
+
 #include "gtest/gtest.h"
 
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
+
+#include <experimental/optional>
 
 namespace ptzf {
 namespace {
@@ -40,17 +44,20 @@ class ControllerTest : public ::testing::Test {
 };
 
 // Tests that the Foo::Bar() method does Abc.
-TEST_F(ControllerTest, InteractiveTest) {
+TEST_F(ControllerTest, SlowTest) {
   Controller c("/dev/SKR");
-  // TODO(mdegans): figure out extents
-  Position min_values{0.0f, 0.0f, 0.0f, 0.0f};
-  Position max_values{96.0f, 42.0f, 47.0f, 12.0f};
+  // @lackdaz you can add/remove positions to tests here
+  Position positions[] = {
+      Position{100.0f, 0.0f, 0.0f, 0.0f},  Position{0.0f, 0.0f, 0.0f, 0.0f},
+      Position{0.0f, 50.0f, 0.0f, 0.0f},   Position{0.0f, 0.0f, 0.0f, 0.0f},
+      Position{100.0f, 50.0f, 0.0f, 0.0f}, Position{100.0f, 0.0f, 0.0f, 0.0f},
+      Position{100.0f, 50.0f, 0.0f, 0.0f}, Position{0.0f, 50.0f, 0.0f, 0.0f},
+      Position{100.0f, 50.0f, 0.0f, 0.0f}, Position{0.0f, 0.0f, 0.0f, 0.0f},
+  };
 
-  ASSERT_TRUE(c.go(min_values));
-  ASSERT_TRUE(c.go(max_values));
-  ASSERT_TRUE(c.go(min_values));
-  ASSERT_TRUE(c.go(max_values));
-  ASSERT_TRUE(c.go(min_values));
+  for (const auto& p : positions) {
+    ASSERT_TRUE(c.go(p));
+  }
 }
 
 }  // namespace

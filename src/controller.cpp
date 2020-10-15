@@ -14,7 +14,7 @@ const char OK_CODE[] = "ok P63 B31";
 /**
  * code to indicate printer is busy
  */
-const char BUSY_CODE[] = "echo:busy: processing";
+const char BUSY_CODE[] = "echo:busy:";
 
 /**
  * cstring to listen for when error occurs.

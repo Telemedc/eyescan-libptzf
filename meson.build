@@ -2,7 +2,7 @@ project('ptzf', ['cpp'],
   version: run_command(
     'head', '-n', '1', files('VERSION'),
   ).stdout().strip(),
-  meson_version: '>= 0.49.0',
+  meson_version: '>= 0.55.0',
   license: 'LGPL',
   default_options: [
     'cpp_std=c++14',

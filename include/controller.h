@@ -1,15 +1,13 @@
 #ifndef C540D9D8_4FC5_4163_BA5C_7C2BB87EFD0E
 #define C540D9D8_4FC5_4163_BA5C_7C2BB87EFD0E
 
+#include "position.h"
+
 #include <mutex>
 #include <string>
 #include <thread>
 
 #include <SerialStream.h>
-
-#include "utils.h"
-
-using std::experimental::optional;
 
 namespace ptzf {
 
@@ -43,7 +41,7 @@ class Controller {
 
   /**
    * @return true if printer/camera is connected.
-   * 
+   *
    * Note: currently this cannot fail. It is not required to disconnect
    * normally. The internal stream destructor should do that.
    */

@@ -1,6 +1,10 @@
 #ifndef D3ABA1AA_24C9_45F8_8A86_453EAE0B0388
 #define D3ABA1AA_24C9_45F8_8A86_453EAE0B0388
 
-#define PTZF_VERSION "@version@"
+namespace ptzf {
+
+const char VERSION[] = "@version@";
+
+}  // namespace ptzf
 
 #endif /* D3ABA1AA_24C9_45F8_8A86_453EAE0B0388 */
