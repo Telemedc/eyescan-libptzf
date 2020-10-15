@@ -18,13 +18,36 @@ namespace ptzf {
  */
 class Controller {
  private:
+  /** The device name */
+  std::string device;
   /** LibSerial::SerialStream for the device */
   LibSerial::SerialStream stream;
 
  public:
-  Controller(std::string device)
-      : stream(device, std::ios::in | std::ios::out){};
+  Controller(std::string device, bool do_connect = true);
   ~Controller() = default;
+
+  /**
+   * Connect to the printer/camera.
+   *
+   * @return false on failure
+   */
+  bool connect();
+
+  /**
+   * Disconnect from the printer/camera.
+   *
+   * @return false on failure
+   */
+  bool disconnect();
+
+  /**
+   * @return true if printer/camera is connected.
+   * 
+   * Note: currently this cannot fail. It is not required to disconnect
+   * normally. The internal stream destructor should do that.
+   */
+  bool is_connected() const;
 
   /**
    * Go to a specific postion. Block until there.

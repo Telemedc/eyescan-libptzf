@@ -19,6 +19,7 @@
 
 #include "utils.h"
 
+#include <iomanip>
 #include <regex>
 #include <string>
 
@@ -63,10 +64,10 @@ optional<Position> string_to_position(const std::string& line) {
 }
 
 std::string position_to_string(const Position& p) {
-  const char LINE_TEMPLATE[] = "G0 X%2.3f Y%2.3f Z%2.3f E%2.3f";
-  char* line = nullptr;
-  sprintf(line, LINE_TEMPLATE, p.x, p.y, p.z, p.f);
-  return std::string(line);
+  std::stringstream s;
+  s << std::fixed << std::setprecision(3) << "G0 X" << p.x << " Y" << p.y
+    << " Z" << p.z << " E" << p.f;
+  return s.str();
 }
 
 }  // namespace ptzf
