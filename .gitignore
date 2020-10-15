@@ -1,0 +1,6 @@
+build/
+*.log
+builddir/
+.vscode/
+subprojects/*
+!subprojects/*.wrap
