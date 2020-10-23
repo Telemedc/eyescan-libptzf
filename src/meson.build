@@ -28,4 +28,5 @@ ptzf_pc = pkg.generate(libptzf,
   libraries: ptzf_deps,
   url: project_url,
   install_dir: get_option('datadir') / 'pkgconfig',
+  subdir: meson.project_name(),
 )
