@@ -25,6 +25,7 @@ ptzf_dep = declare_dependency(
 pkg = import('pkgconfig')
 ptzf_pc = pkg.generate(libptzf,
   description: project_description,
+  libraries: ptzf_deps,
   url: project_url,
   install_dir: get_option('datadir') / 'pkgconfig',
 )
