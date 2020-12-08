@@ -7,6 +7,7 @@ project('ptzf', ['cpp'],
   default_options: [
     'cpp_std=c++14',
     'warning_level=2',  # -Wall
+    'werror=true',  # -Werror
   ],
 )
 
