@@ -28,7 +28,7 @@ foreach basename : unit_tests
   )
 endforeach
 
-# run integration tests with large timout
+# build integration tests but do not run them
 foreach basename : integration_tests
   test_file = files('integration_' + basename + ext)
   exe = executable('integration_' + basename, test_file,
@@ -36,11 +36,11 @@ foreach basename : integration_tests
     include_directories: ptzf_incdir,
     link_with: libptzf,
   )
-  test('integration ' + basename + ext, exe, 
-    suite: 'integration',
-    is_parallel: false, # the tests will break on parallel run
-    protocol: 'gtest',
-    timeout: 240,  # seconds
-    env: [],
-  )
+  # test('integration ' + basename + ext, exe, 
+  #   suite: 'integration',
+  #   is_parallel: false, # the tests will break on parallel run
+  #   protocol: 'gtest',
+  #   timeout: 240,  # seconds
+  #   env: [],
+  # )
 endforeach
