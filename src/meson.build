@@ -7,13 +7,16 @@ ptzf_source = [
 ptzf_deps = [
   dependency('threads'),
   dependency('libserial'),
-  dependency('boost', modules: ['log']),
 ]
 
-libptzf = library('ptzf-' + proj_ver_short, ptzf_source,
-  dependencies: ptzf_deps,
+libptzf = library(meson.project_name(), ptzf_source,
+  dependencies: [
+    ptzf_deps,
+    dependency('boost', modules: ['log']),
+  ],
   include_directories: ptzf_incdir,
   install: true,
+  version: meson.project_version(),
 )
 
 ptzf_dep = declare_dependency(

@@ -10,7 +10,7 @@ gtest_proj = subproject('gtest')
 
 test_deps = [
   gtest_proj.get_variable('gtest_dep'),
-  dependency('boost', modules: ['system']),
+  dependency('boost', modules: ['system', 'log']),
 ]
 
 # run unit tests with default timeout
