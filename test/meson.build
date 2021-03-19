@@ -4,6 +4,15 @@ integration_tests = [
   'controller'
 ]
 
+test_cflags = []
+build_integration_tests = false
+if get_option('PRINTER') != ''
+  printer_device = get_option('PRINTER')
+  message('PRINTER=' + printer_device)
+  test_cflags += '-DPRINTER="' + printer_device + '"'
+  message('PRINTER defined. Building integration tests.')
+  build_integration_tests = true
+endif
 
 # googletest subproject stuff
 gtest_proj = subproject('gtest')
@@ -28,19 +37,14 @@ foreach basename : unit_tests
   )
 endforeach
 
-# build integration tests but do not run them
-foreach basename : integration_tests
-  test_file = files('integration_' + basename + ext)
-  exe = executable('integration_' + basename, test_file,
-    dependencies: [ptzf_deps, test_deps],
-    include_directories: ptzf_incdir,
-    link_with: libptzf,
-  )
-  # test('integration ' + basename + ext, exe, 
-  #   suite: 'integration',
-  #   is_parallel: false, # the tests will break on parallel run
-  #   protocol: 'gtest',
-  #   timeout: 240,  # seconds
-  #   env: [],
-  # )
-endforeach
+if build_integration_tests
+  # build integration tests but do not run them
+  foreach basename : integration_tests
+    test_file = files('integration_' + basename + ext)
+    exe = executable('integration_' + basename, test_file,
+      dependencies: [ptzf_deps, test_deps],
+      include_directories: ptzf_incdir,
+      link_with: libptzf,
+    )
+  endforeach
+endif

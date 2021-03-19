@@ -1,0 +1,5 @@
+option('PRINTER',
+  type : 'string',
+  description : 'Define printer device path.',
+  yield: true,  # use superproject option if available
+)
