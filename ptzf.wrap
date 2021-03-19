@@ -1,0 +1,7 @@
+[wrap-git]
+url = https://github.com/mdegans/libptzf.git
+# set revision to a tag / sha / branch
+revision = master
+
+[provide]
+ptzf = ptzf_dep

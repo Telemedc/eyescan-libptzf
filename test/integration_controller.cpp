@@ -45,7 +45,7 @@ class ControllerTest : public ::testing::Test {
 
 // Tests that the Foo::Bar() method does Abc.
 TEST_F(ControllerTest, SlowTest) {
-  Controller c("/dev/SKR");
+  Controller c(PRINTER);
   // @lackdaz you can add/remove positions to tests here
   Position positions[] = {
       Position{100.0f, 0.0f, 0.0f, 0.0f},  Position{0.0f, 0.0f, 0.0f, 0.0f},
