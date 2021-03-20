@@ -14,6 +14,7 @@ libptzf = library(meson.project_name(), ptzf_source,
     ptzf_deps,
     dependency('boost', modules: ['log']),
   ],
+  override_options : ['cxx_std=c++14'],  # because subprjects can override this
   version: meson.project_version(),
   include_directories: ptzf_incdir,
   install: true,
