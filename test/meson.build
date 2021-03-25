@@ -26,6 +26,7 @@ test_deps = [
 foreach basename : unit_tests
   test_file = files('test_' + basename + ext)
   exe = executable('test_' + basename, test_file,
+    cpp_args: test_cflags,
     dependencies: [ptzf_deps, test_deps],
     include_directories: ptzf_incdir,
     link_with: libptzf,
@@ -42,6 +43,7 @@ if build_integration_tests
   foreach basename : integration_tests
     test_file = files('integration_' + basename + ext)
     exe = executable('integration_' + basename, test_file,
+      cpp_args: test_cflags,
       dependencies: [ptzf_deps, test_deps],
       include_directories: ptzf_incdir,
       link_with: libptzf,
