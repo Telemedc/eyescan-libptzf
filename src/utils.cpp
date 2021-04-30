@@ -28,6 +28,21 @@ using std::experimental::optional;
 namespace ptzf {
 
 /**
+ * cstring to listen for when go destination is reached.
+ */
+const char OK_CODE[] = "ok P63 B31";
+
+/**
+ * code to indicate printer is busy
+ */
+const char BUSY_CODE[] = "echo:busy:";
+
+/**
+ * cstring to listen for when error occurs.
+ */
+const char ERROR_CODE[] = "error";
+
+/**
  * Regex for a position line (M114 return)
  */
 const std::regex RX_LINE(
@@ -70,6 +85,39 @@ std::string position_to_string(const Position& p) {
   s << std::fixed << std::setprecision(3) << "G0 X" << p.x << " Y" << p.y
     << " Z" << p.z << " E" << p.f;
   return s.str();
+}
+
+bool wait_for_ok(LibSerial::SerialStream& stream) {
+  if (!stream.IsOpen()) {
+    LOG(error) << "Stream not open. Can't wait for \"OK\"";
+    return false;
+  }
+
+  LOG(debug) << "Waiting for \"OK\"";
+  std::string line;
+  while (stream.IsOpen()) {
+    std::getline(stream, line);
+    LOG(debug) << "recv:" << line;
+    // if line starts with OK_CODE
+    if (!line.compare(0, sizeof(OK_CODE), OK_CODE)) {
+      LOG(debug) << "Found OK_CODE in line: \"" << line << '"';
+      return true;
+    };
+    // if line starts with BUSY_CODE
+    if (!line.compare(0, sizeof(BUSY_CODE), BUSY_CODE)) {
+      LOG(debug) << "Found BUSY_CODE in line: \"" << line << '"';
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      continue;
+    };
+    // if line starts with ERROR_CODE.
+    if (!line.compare(0, sizeof(ERROR_CODE), ERROR_CODE)) {
+      LOG(error) << line;
+      return false;
+    };
+  }
+
+  LOG(error) << "reached end of context somehow";
+  return false;
 }
 
 }  // namespace ptzf

@@ -6,21 +6,6 @@
 
 namespace ptzf {
 
-/**
- * cstring to listen for when go destination is reached.
- */
-const char OK_CODE[] = "ok P63 B31";
-
-/**
- * code to indicate printer is busy
- */
-const char BUSY_CODE[] = "echo:busy:";
-
-/**
- * cstring to listen for when error occurs.
- */
-const char ERROR_CODE[] = "error";
-
 Controller::Controller(std::string device, bool do_connect)
     : device(device), stream() {
   if (do_connect) {
@@ -50,7 +35,8 @@ bool Controller::connect() {
   LOG(debug) << "Speed set: 2400mm/min";
   this->stream << "G28" << std::endl;
   LOG(debug) << "G28 Auto Home set";
-  return true;
+
+  return wait_for_ok(this->stream);
 }
 
 bool Controller::disconnect() {
@@ -88,30 +74,7 @@ bool Controller::go(const Position& p) {
   this->stream << "M400" << std::endl;
 
   // read lines from the stream until line starts with ok
-  LOG(debug) << "Waiting for \"ok\"";
-  std::string line;
-  while (this->stream.IsOpen()) {
-    std::getline(this->stream, line);
-    LOG(debug) << "recv:" << line;
-    // if line starts with OK_CODE
-    if (!line.compare(0, sizeof(OK_CODE), OK_CODE)) {
-      LOG(debug) << "Found OK_CODE in line: \"" << line << '"';
-      return true;
-    };
-    // if line starts with BUSY_CODE
-    if (!line.compare(0, sizeof(BUSY_CODE), BUSY_CODE)) {
-      LOG(debug) << "Found BUSY_CODE in line: \"" << line << '"';
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      continue;
-    };
-    // if line starts with ERROR_CODE.
-    if (!line.compare(0, sizeof(ERROR_CODE), ERROR_CODE)) {
-      LOG(error) << line;
-      return false;
-    };
-  }
-  LOG(error) << "reached end of context somehow";
-  return false;
+  return wait_for_ok(this->stream);
 }
 
 }  // namespace ptzf
