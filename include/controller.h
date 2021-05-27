@@ -52,7 +52,7 @@ class Controller {
    *
    * @return false on fail, true on success
    */
-  bool go(const Position& p);
+  bool go(Position p);
 };
 
 }  // namespace ptzf

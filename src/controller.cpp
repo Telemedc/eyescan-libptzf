@@ -53,7 +53,7 @@ bool Controller::is_connected() const {
   return this->stream.IsOpen();
 }
 
-bool Controller::go(const Position& p) {
+bool Controller::go(Position p) {
   // check the stream is open
   if (!this->stream.IsOpen()) {
     LOG(error) << "Internal stream is closed.";
