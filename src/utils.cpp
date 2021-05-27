@@ -48,11 +48,6 @@ const char ERROR_CODE[] = "error";
 const std::regex RX_LINE(
     R"ESC(X:(\d{1,2}\.\d{2}) Y:(\d{1,2}\.\d{2}) Z:(\d{1,2}\.\d{2}) E:(\d{1,2}\.\d{2}) Count X)ESC");
 
-/**
- * GCode line template to convert a position to string
- */
-const char LINE_TEMPLATE[] = "G0 X%2.3f Y%2.3f Z%2.3f E%2.3f";
-
 void join_and_log(std::thread& t) {
   if (t.joinable()) {
     LOG(debug) << "Joining " << t.get_id();
