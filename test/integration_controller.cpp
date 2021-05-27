@@ -3,9 +3,6 @@
 
 #include "gtest/gtest.h"
 
-#include <boost/log/core.hpp>
-#include <boost/log/expressions.hpp>
-
 #include <experimental/optional>
 
 namespace ptzf {
@@ -18,8 +15,6 @@ class ControllerTest : public ::testing::Test {
   // be empty.
 
   ControllerTest() {
-    boost::log::core::get()->set_filter(boost::log::trivial::severity >=
-                                        boost::log::trivial::debug);
   }
 
   ~ControllerTest() override {
