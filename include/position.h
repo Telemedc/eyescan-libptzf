@@ -8,13 +8,13 @@ namespace ptzf {
  */
 struct Position {
   /** Pan. */
-  float x;
+  double x;
   /** Tilt */
-  float y;
+  double y;
   /** Zoom */
-  float z;
+  double z;
   /** Focus */
-  float f;
+  double f;
 };
 
 }  // namespace ptzf
