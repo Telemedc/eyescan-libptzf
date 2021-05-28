@@ -5,14 +5,13 @@ ptzf_source = [
 ]
 
 ptzf_deps = [
-  dependency('threads'),
   dependency('libserial'),
 ]
 
 libptzf = library(meson.project_name(), ptzf_source,
   dependencies: [
     ptzf_deps,
-    dependency('boost', modules: ['log']),
+    dependency('boost', modules: ['log', 'system', 'thread']),
   ],
   override_options : ['cxx_std=c++14'],  # because subprjects can override this
   version: meson.project_version(),
@@ -23,14 +22,13 @@ libptzf = library(meson.project_name(), ptzf_source,
 ptzf_dep = declare_dependency(
   link_with: libptzf,
   include_directories: ptzf_incdir,
-  dependencies: ptzf_deps,
   version: meson.project_version(),
 )
 
 pkg = import('pkgconfig')
 ptzf_pc = pkg.generate(libptzf,
   description: project_description,
-  libraries: ptzf_deps,
+  requires_private: ptzf_deps,
   url: project_url,
   install_dir: get_option('datadir') / 'pkgconfig',
   subdirs: meson.project_name(),

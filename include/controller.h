@@ -1,29 +1,22 @@
 #ifndef C540D9D8_4FC5_4163_BA5C_7C2BB87EFD0E
 #define C540D9D8_4FC5_4163_BA5C_7C2BB87EFD0E
 
-#include "position.h"
-
 #include <mutex>
 #include <string>
 #include <thread>
+#include <memory>
 
-#include <SerialStream.h>
+#include "position.h"
 
 namespace ptzf {
 
 /**
  * A class for controlling Pan, Tilt, Zoom and Focus.
  */
-class Controller {
- private:
-  /** The device name */
-  std::string device;
-  /** LibSerial::SerialStream for the device */
-  LibSerial::SerialStream stream;
-
+class Controller final {
  public:
   Controller(std::string device, bool do_connect = true);
-  ~Controller() = default;
+  ~Controller();
 
   /**
    * Connect to the printer/camera.
@@ -53,6 +46,9 @@ class Controller {
    * @return false on fail, true on success
    */
   bool go(Position p);
+ private:
+  struct Impl;
+  std::unique_ptr<Impl> impl;
 };
 
 }  // namespace ptzf
