@@ -11,6 +11,5 @@ ptzf_incdir = include_directories('.')
 install_headers(
   'controller.h',
   'position.h',
-  ptzf_config_h,
   subdir: meson.project_name(),
 )
