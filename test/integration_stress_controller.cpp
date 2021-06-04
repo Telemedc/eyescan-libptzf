@@ -9,15 +9,14 @@ namespace ptzf {
 namespace {
 
 // The fixture for testing class Controller.
-class ControllerTest : public ::testing::Test {
+class ControllerStressTest : public ::testing::Test {
  protected:
   // You can remove any or all of the following functions if their bodies would
   // be empty.
 
-  ControllerTest() {
-  }
+  ControllerStressTest() {}
 
-  ~ControllerTest() override {
+  ~ControllerStressTest() override {
     // You can do clean-up work that doesn't throw exceptions here.
   }
 
@@ -38,25 +37,11 @@ class ControllerTest : public ::testing::Test {
   // for Foo.
 };
 
-// Tests that the Foo::Bar() method does Abc.
-TEST_F(ControllerTest, SlowTest) {
+// Tests that the controller doesn't segfault after being created and destroyed
+// repeatedly, which is an issue found when testing with ptzf.
+TEST_F(ControllerStressTest, CreateDestroyLoop) {
 #ifdef PRINTER
-  Controller c(PRINTER);
-#else
-  Controller c("/dev/mock_printer");
-#endif // PRINTER
-  // @lackdaz you can add/remove positions to tests here
-  Position positions[] = {
-      Position{100.0f, 0.0f, 0.0f, 0.0f},  Position{0.0f, 0.0f, 0.0f, 0.0f},
-      Position{0.0f, 50.0f, 0.0f, 0.0f},   Position{0.0f, 0.0f, 0.0f, 0.0f},
-      Position{100.0f, 50.0f, 0.0f, 0.0f}, Position{100.0f, 0.0f, 0.0f, 0.0f},
-      Position{100.0f, 50.0f, 0.0f, 0.0f}, Position{0.0f, 50.0f, 0.0f, 0.0f},
-      Position{100.0f, 50.0f, 0.0f, 0.0f}, Position{0.0f, 0.0f, 0.0f, 0.0f},
-  };
-
-  for (const auto& p : positions) {
-    ASSERT_TRUE(c.go(p));
-  }
+#endif
 }
 
 }  // namespace

@@ -1,16 +1,18 @@
 #include <chrono>
+#include <cmath>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <thread>
 
 #include <SerialStream.h>
-
-#include "controller.h"
-#include "utils.h"
 
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
+
+#include "controller.h"
+#include "utils.h"
 
 namespace logging = boost::log;
 
@@ -33,12 +35,38 @@ const char BUSY_CODE[] = "echo:busy:";
  */
 const char ERROR_CODE[] = "error";
 
+#ifndef PRINTER
+/**
+ * @brief Mock printer travel speed. Tuned to match the real thing (2400/60).
+ */
+const double MOCK_MM_PER_SEC = 40.0;
+/** @returns xyz distance between two ptzf Positions */
+double distance_between(const ptzf::Position& a, const ptzf::Position& b) {
+  double xd = (a.x - b.x) * (a.x - b.x);
+  double yd = (a.y - b.y) * (a.y - b.y);
+  double zd = (a.z - b.z) * (a.z - b.z);
+  return std::sqrt(xd + yd + zd);
+}
+/** @returns simulated travel time between two ptzf Positions */
+int ms_to_travel(const ptzf::Position& a, const ptzf::Position& b) {
+  double xyz_d = distance_between(a, b);
+  LOG(debug) << "simulated travel distance " << xyz_d << "mm";
+  // focus can happen at the same time and is independent from xyz travel
+  double fd = std::abs(a.f - b.f);
+  LOG(debug) << "simulated focus distance " << fd << "mm";
+  int ms = static_cast<int>(std::max(xyz_d, fd) / MOCK_MM_PER_SEC * 1000.0);
+  LOG(debug) << "simulated travel time " << ms << "ms";
+  return ms;
+}
+#endif  // PRINTER
+
 static bool wait_for_ok(LibSerial::SerialStream& stream) {
   if (!stream.IsOpen()) {
     LOG(error) << "Stream not open. Can't wait for \"OK\"";
     return false;
   }
 
+  // read lines from the stream until line starts with ok
   LOG(debug) << "Waiting for \"OK\"";
   std::string line;
   while (stream.IsOpen()) {
@@ -68,7 +96,13 @@ static bool wait_for_ok(LibSerial::SerialStream& stream) {
 
 class Controller::Impl {
  public:
-  Impl(std::string device, bool do_connect = true) : device(device), stream() {
+  Impl(std::string device, bool do_connect = true)
+      : device(device)
+#ifdef PRINTER
+        ,
+        stream()
+#endif  // PRINTER
+  {
     // this isn't ideal since the logger is global.
     // TODO: logger just for ptzf
     if (std::getenv("PTZF_DEBUG")) {
@@ -85,6 +119,7 @@ class Controller::Impl {
   ~Impl() = default;
 
   bool connect() {
+#ifdef PRINTER
     try {
       LOG(debug) << "Opening: " << this->device;
       this->stream.Open(this->device, std::ios::in | std::ios::out);
@@ -108,56 +143,92 @@ class Controller::Impl {
     LOG(debug) << "G28 Auto Home set";
 
     return wait_for_ok(this->stream);
+#else
+    // it normally takes about 1000ms to connect
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    mock_connected = true;
+    (void)wait_for_ok;  // because unused-function otherwise
+    return mock_connected;
+#endif  // PRINTER
   }
 
   bool disconnect() {
+#ifdef PRINTER
     // this signals all threads to stop
     if (this->stream.IsOpen()) {
+#endif  // PRINTER
       LOG(debug) << "Closing: " << this->device;
+#ifdef PRINTER
       this->stream.Close();
     }
+#else
+    mock_connected = false;
+#endif  // PRINTER
     LOG(debug) << "Closed: " << this->device;
     return true;
   }
 
-  bool is_connected() { return this->stream.IsOpen(); }
+  bool is_connected() {
+#ifdef PRINTER
+    return this->stream.IsOpen();
+#else
+    return mock_connected;
+#endif  // PRINTER
+  }
 
   bool go(Position p) {
+#ifdef PRINTER
     // check the stream is open
-    if (!this->stream.IsOpen()) {
+    if (!this->is_connected()) {
+#else
+    if (!mock_connected) {
+#endif  // PRINTER
       LOG(error) << "Internal stream is closed.";
       return false;
     }
-
+#ifdef PRINTER
     // reset input buffer
     this->stream.sync();
+#endif  // PRINTER
 
     // send the position to the stream
     auto s = position_to_string(p);
     LOG(debug) << "send:" << s;
+#ifdef PRINTER
     this->stream << s << std::endl;
+#endif  // PRINTER
 
     // tell printer to block until it arrives
     // (there is no realiable way to do this).'
     LOG(debug) << "send:M400";
+#ifdef PRINTER
     this->stream << "M400" << std::endl;
+#endif  // PRINTER
 
-    // read lines from the stream until line starts with ok
+#ifdef PRINTER
     return wait_for_ok(this->stream);
+#else
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(ms_to_travel(p, mock_last_p)));
+    return true;
+#endif  // PRINTER
   }
 
  private:
   /** The device name */
   std::string device;
+#ifdef PRINTER
   /** LibSerial::SerialStream for the device */
   LibSerial::SerialStream stream;
+#else
+  bool mock_connected;
+  ptzf::Position mock_last_p = {};
+#endif  // PRINTER
 };
 
 Controller::Controller(std::string device, bool do_connect)
-    : impl(std::make_unique<Impl>(device, do_connect)) {
-}
+    : impl(std::make_unique<Impl>(device, do_connect)) {}
 Controller::~Controller() = default;
-
 
 bool Controller::connect() {
   return impl->connect();

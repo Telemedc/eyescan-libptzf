@@ -8,11 +8,21 @@ ptzf_deps = [
   dependency('libserial'),
 ]
 
+cpp_args = []
+if get_option('PRINTER') != ''
+  printer_device = get_option('PRINTER')
+  message('PRINTER=' + printer_device)
+  cpp_args += '-DPRINTER="' + printer_device + '"'
+else
+  warning('PRINTER not defined with `-DPRINTER=...` PRINTER will be simulated.')
+endif
+
 libptzf = library(meson.project_name(), ptzf_source,
   dependencies: [
     ptzf_deps,
     dependency('boost', modules: ['log', 'system', 'thread']),
   ],
+  cpp_args: cpp_args,
   override_options : ['cxx_std=c++14'],  # because subprjects can override this
   version: meson.project_version(),
   include_directories: ptzf_incdir,
