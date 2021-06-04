@@ -38,3 +38,25 @@ the installation path is not writable to the running user (usually the case).
 In this case, do the ugly `sudo pip3 install --upgrade meson`. You will probably
 wish to `sudo apt uninstall meson` if meson is installed with apt since it may
 conflict.
+
+# Testing:
+
+## Valgrind
+
+Other than the above tests and coverage reports, Valgrind (`sudo apt install valgrind`) can also be used to
+wrap the test to test for memory issues like this:
+
+```
+meson test --wrap='valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1'
+```
+[source: pmod on stackoverflow, MIT license](https://stackoverflow.com/questions/57734973/how-to-use-valgrind-with-meson)
+
+## Sanitizers
+
+[Sanitizers can be configured](https://mesonbuild.com/howtox.html)
+when running meson the first time like:
+```
+meson -Db_sanitize=address (for ASan)
+```
+[Values can be](https://mesonbuild.com/Builtin-options.html#base-options):
+`none, address, thread, undefined, memory, address, undefined`
