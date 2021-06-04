@@ -27,7 +27,7 @@ pip3 install gcovr
 ```
 mkdir builddir (vscode should make this for you if you have the meson extension)
 cd buildir
-meson ..
+meson -Db_coverage=true ..
 ninja test
 (optional for coverage reports) ninja coverage
 (sudo) ninja install
