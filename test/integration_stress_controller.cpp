@@ -5,6 +5,10 @@
 
 #include <experimental/optional>
 
+#ifndef PRINTER
+  #define PRINTER "/dev/simulated_printer"
+#endif
+
 namespace ptzf {
 namespace {
 
@@ -40,8 +44,11 @@ class ControllerStressTest : public ::testing::Test {
 // Tests that the controller doesn't segfault after being created and destroyed
 // repeatedly, which is an issue found when testing with ptzf.
 TEST_F(ControllerStressTest, CreateDestroyLoop) {
-#ifdef PRINTER
-#endif
+  // this probably will only fail with a real printer
+  for (int i = 0; i < 10; i++) {
+    Controller ctrl(PRINTER);
+    (void)ctrl;
+  }
 }
 
 }  // namespace

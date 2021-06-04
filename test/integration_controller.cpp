@@ -5,6 +5,10 @@
 
 #include <experimental/optional>
 
+#ifndef PRINTER
+  #define PRINTER "/dev/simulated_printer"
+#endif
+
 namespace ptzf {
 namespace {
 
@@ -40,11 +44,7 @@ class ControllerTest : public ::testing::Test {
 
 // Tests that the Foo::Bar() method does Abc.
 TEST_F(ControllerTest, SlowTest) {
-#ifdef PRINTER
   Controller c(PRINTER);
-#else
-  Controller c("/dev/mock_printer");
-#endif // PRINTER
   // @lackdaz you can add/remove positions to tests here
   Position positions[] = {
       Position{100.0f, 0.0f, 0.0f, 0.0f},  Position{0.0f, 0.0f, 0.0f, 0.0f},
