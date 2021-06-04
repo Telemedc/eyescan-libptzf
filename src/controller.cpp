@@ -177,6 +177,10 @@ class Controller::Impl {
   }
 
   bool go(Position p) {
+    if (!p.is_valid()) {
+      LOG(error) << "invalid position: " << position_to_string(p);
+      return false;
+    }
 #ifdef PRINTER
     // check the stream is open
     if (!this->is_connected()) {

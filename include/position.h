@@ -15,6 +15,9 @@ struct Position {
   double z;
   /** Focus */
   double f;
+  bool is_valid() const;
+  static const Position& max();
+  static const Position& min();
 };
 
 }  // namespace ptzf

@@ -5,9 +5,11 @@
 
 #include <experimental/optional>
 
+// clang-format off
 #ifndef PRINTER
   #define PRINTER "/dev/simulated_printer"
 #endif
+// clang-format on
 
 namespace ptzf {
 namespace {
@@ -18,8 +20,7 @@ class ControllerTest : public ::testing::Test {
   // You can remove any or all of the following functions if their bodies would
   // be empty.
 
-  ControllerTest() {
-  }
+  ControllerTest() {}
 
   ~ControllerTest() override {
     // You can do clean-up work that doesn't throw exceptions here.
@@ -46,12 +47,19 @@ class ControllerTest : public ::testing::Test {
 TEST_F(ControllerTest, SlowTest) {
   Controller c(PRINTER);
   // @lackdaz you can add/remove positions to tests here
+  auto max = Position::max();
+  auto min = Position::min();
   Position positions[] = {
-      Position{100.0f, 0.0f, 0.0f, 0.0f},  Position{0.0f, 0.0f, 0.0f, 0.0f},
-      Position{0.0f, 50.0f, 0.0f, 0.0f},   Position{0.0f, 0.0f, 0.0f, 0.0f},
-      Position{100.0f, 50.0f, 0.0f, 0.0f}, Position{100.0f, 0.0f, 0.0f, 0.0f},
-      Position{100.0f, 50.0f, 0.0f, 0.0f}, Position{0.0f, 50.0f, 0.0f, 0.0f},
-      Position{100.0f, 50.0f, 0.0f, 0.0f}, Position{0.0f, 0.0f, 0.0f, 0.0f},
+      Position{max.x, min.y, min.z, min.f},
+      Position{max.x, min.y, min.z, min.f},
+      Position{max.x, max.y, min.z, min.f},
+      Position{max.x, min.y, min.z, min.f},
+      Position{max.x, max.y, min.z, min.f},
+      Position{max.x, min.y, min.z, min.f},
+      Position{max.x, max.y, min.z, min.f},
+      Position{max.x, max.y, min.z, min.f},
+      Position{max.x, max.y, min.z, min.f},
+      Position{max.x, min.y, min.z, min.f},
   };
 
   for (const auto& p : positions) {

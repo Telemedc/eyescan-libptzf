@@ -1,5 +1,7 @@
 ext = '.cpp'
-unit_tests = []
+unit_tests = [
+  'position',
+]
 integration_tests = [
   'controller',
   'stress_controller',
@@ -14,8 +16,8 @@ test_deps = [
 
 # run unit tests with default timeout
 foreach basename : unit_tests
-  test_file = files('test_' + basename + ext)
-  exe = executable('test_' + basename, test_file,
+  test_file = files('unit_' + basename + ext)
+  exe = executable('unit_' + basename, test_file,
     cpp_args: cpp_args,
     dependencies: [ptzf_dep, test_deps],
     include_directories: ptzf_incdir,
@@ -38,6 +40,7 @@ foreach basename : integration_tests
   test('test ' + basename + ext, exe,
     suite: 'integration',
     protocol: 'gtest',
+    is_parallel: false,
     env: ['PTZF_DEBUG=true'],
   )
 endforeach
