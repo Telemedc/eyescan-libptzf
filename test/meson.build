@@ -35,4 +35,8 @@ foreach basename : integration_tests
     dependencies: [ptzf_dep, test_deps],
     include_directories: ptzf_incdir,
   )
+  test('test ' + basename + ext, exe,
+    suite: 'integration',
+    protocol: 'gtest',
+  )
 endforeach
