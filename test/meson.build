@@ -23,7 +23,7 @@ foreach basename : unit_tests
   test('test ' + basename + ext, exe,
     suite: 'unit',
     protocol: 'gtest',
-    env: [],
+    env: ['PTZF_DEBUG=true'],
   )
 endforeach
 
@@ -38,5 +38,6 @@ foreach basename : integration_tests
   test('test ' + basename + ext, exe,
     suite: 'integration',
     protocol: 'gtest',
+    env: ['PTZF_DEBUG=true'],
   )
 endforeach
