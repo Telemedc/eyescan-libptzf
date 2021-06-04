@@ -5,3 +5,4 @@ builddir/
 subprojects/*
 !subprojects/*.wrap
 \#*.gcov
+^#*.gcov
