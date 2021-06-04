@@ -41,6 +41,7 @@ foreach basename : integration_tests
     suite: 'integration',
     protocol: 'gtest',
     is_parallel: false,
+    timeout: 300,
     env: ['PTZF_DEBUG=true'],
   )
 endforeach
