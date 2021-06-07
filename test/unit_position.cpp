@@ -1,12 +1,6 @@
-#include "position.h"
-
 #include "gtest/gtest.h"
 
-#include <experimental/optional>
-
-#ifndef PRINTER
-  #define PRINTER "/dev/simulated_printer"
-#endif
+#include "position.h"
 
 namespace ptzf {
 namespace {
@@ -18,31 +12,31 @@ class PositionTest : public ::testing::Test {};
 // this could potentially break hardware, so it's pretty important
 TEST_F(PositionTest, TestIsValid) {
   Position too_big{
-    .x = Position::max().x + 1.0,
-    .y = Position::max().y + 1.0,
-    .z = Position::max().z + 1.0,
-    .f = Position::max().f + 1.0,
+      .x = Position::max().x + 1.0,
+      .y = Position::max().y + 1.0,
+      .z = Position::max().z + 1.0,
+      .f = Position::max().f + 1.0,
   };
 
   Position not_too_big{
-    .x = Position::max().x - 1.0,
-    .y = Position::max().y - 1.0,
-    .z = Position::max().z - 1.0,
-    .f = Position::max().f - 1.0,
+      .x = Position::max().x - 1.0,
+      .y = Position::max().y - 1.0,
+      .z = Position::max().z - 1.0,
+      .f = Position::max().f - 1.0,
   };
 
   Position too_small{
-    .x = Position::min().x - 1.0,
-    .y = Position::min().y - 1.0,
-    .z = Position::min().z - 1.0,
-    .f = Position::min().f - 1.0,
+      .x = Position::min().x - 1.0,
+      .y = Position::min().y - 1.0,
+      .z = Position::min().z - 1.0,
+      .f = Position::min().f - 1.0,
   };
 
   Position not_too_small{
-    .x = Position::min().x + 1.0,
-    .y = Position::min().y + 1.0,
-    .z = Position::min().z + 1.0,
-    .f = Position::min().f + 1.0,
+      .x = Position::min().x + 1.0,
+      .y = Position::min().y + 1.0,
+      .z = Position::min().z + 1.0,
+      .f = Position::min().f + 1.0,
   };
 
   EXPECT_FALSE(too_big.is_valid());

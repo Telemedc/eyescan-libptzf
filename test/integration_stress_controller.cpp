@@ -5,9 +5,11 @@
 
 #include <experimental/optional>
 
+// clang-format off
 #ifndef PRINTER
   #define PRINTER "/dev/simulated_printer"
 #endif
+// clang-format on
 
 namespace ptzf {
 namespace {
