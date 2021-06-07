@@ -32,4 +32,4 @@ project_url = 'https://github.com/mdegans/libptzf'
 subdir('include')
 subdir('src')
 subdir('test')
-# subdir('docs')
+subdir('docs')

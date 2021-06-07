@@ -15,8 +15,17 @@ struct Position {
   double z;
   /** Focus */
   double f;
+  /**
+   * @brief Checks whether the position is valid (within `min()` and `max()`)
+   */
   bool is_valid() const;
+  /**
+   * @brief Maximum allowable position for the printer.
+   */
   static const Position& max();
+  /**
+   * @brief Minimum allowable position for the printer.
+   */
   static const Position& min();
 };
 

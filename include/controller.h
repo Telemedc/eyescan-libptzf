@@ -15,6 +15,13 @@ namespace ptzf {
  */
 class Controller final {
  public:
+ /**
+  * @brief Construct a new Controller object
+  * 
+  * @param device path to a printer serial device
+  * @param do_connect whether to connect on construct. if false, you must
+  * `connect()` manually before you `go()` to a `Position`.
+  */
   Controller(std::string device, bool do_connect = true);
   ~Controller();
 
