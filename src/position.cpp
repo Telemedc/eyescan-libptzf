@@ -3,18 +3,18 @@
 
 namespace ptzf {
 
-constexpr Position MAX_POS {
-  .x = MAX_POS_X,
-  .y = MAX_POS_Y,
-  .z = MAX_POS_Z,
-  .f = MAX_POS_F,
+constexpr Position MAX_POS{
+    .x = MAX_POS_X,
+    .y = MAX_POS_Y,
+    .z = MAX_POS_Z,
+    .f = MAX_POS_F,
 };
 
-constexpr Position MIN_POS {
-  .x = MIN_POS_X,
-  .y = MIN_POS_Y,
-  .z = MIN_POS_Z,
-  .f = MIN_POS_F,
+constexpr Position MIN_POS{
+    .x = MIN_POS_X,
+    .y = MIN_POS_Y,
+    .z = MIN_POS_Z,
+    .f = MIN_POS_F,
 };
 
 const Position& Position::max() {

@@ -94,7 +94,7 @@ static bool wait_for_ok(LibSerial::SerialStream& stream) {
   return false;
 }
 
-class Controller::Impl {
+struct Controller::Impl {
  public:
   Impl(std::string device, bool do_connect = true)
       : device(device)

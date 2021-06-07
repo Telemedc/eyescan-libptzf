@@ -10,7 +10,8 @@ namespace ptzf {
 /**
  * Parse a line of GCode and return a Position if possible
  */
-std::experimental::optional<Position> string_to_position(const std::string& line);
+std::experimental::optional<Position> string_to_position(
+    const std::string& line);
 
 /**
  * Convert a position to string.
