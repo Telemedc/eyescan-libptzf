@@ -4,3 +4,5 @@ builddir/
 .vscode/
 subprojects/*
 !subprojects/*.wrap
+\#*.gcov
+^#*.gcov

@@ -5,6 +5,21 @@ namespace ptzf {
 
 const char VERSION[] = "@version@";
 
+const double MIN_POS_X = 0.0;
+const double MIN_POS_Y = 0.0;
+const double MIN_POS_Z = 0.0;
+const double MIN_POS_F = 0.0;
+
+// clang-format off
+// (will break templating if on)
+
+const double MAX_POS_X = @MAX_POS_X@.0;
+const double MAX_POS_Y = @MAX_POS_Y@.0;
+const double MAX_POS_Z = @MAX_POS_Z@.0;
+const double MAX_POS_F = @MAX_POS_F@.0;
+
+// clang-format on
+
 }  // namespace ptzf
 
 #endif /* D3ABA1AA_24C9_45F8_8A86_453EAE0B0388 */

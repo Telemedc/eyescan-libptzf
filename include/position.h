@@ -8,13 +8,25 @@ namespace ptzf {
  */
 struct Position {
   /** Pan. */
-  float x;
+  double x;
   /** Tilt */
-  float y;
+  double y;
   /** Zoom */
-  float z;
+  double z;
   /** Focus */
-  float f;
+  double f;
+  /**
+   * @brief Checks whether the position is valid (within `min()` and `max()`)
+   */
+  bool is_valid() const;
+  /**
+   * @brief Maximum allowable position for the printer.
+   */
+  static const Position& max();
+  /**
+   * @brief Minimum allowable position for the printer.
+   */
+  static const Position& min();
 };
 
 }  // namespace ptzf
