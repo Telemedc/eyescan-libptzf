@@ -2,9 +2,7 @@
 #define C540D9D8_4FC5_4163_BA5C_7C2BB87EFD0E
 
 #include <memory>
-#include <mutex>
 #include <string>
-#include <thread>
 
 #include "position.h"
 
