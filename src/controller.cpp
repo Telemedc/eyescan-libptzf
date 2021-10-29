@@ -5,7 +5,7 @@
 #include <string>
 #include <thread>
 
-#include <SerialStream.h>
+#include <libserial/SerialStream.h>
 
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
@@ -214,6 +214,7 @@ struct Controller::Impl {
 #else
     std::this_thread::sleep_for(
         std::chrono::milliseconds(ms_to_travel(p, mock_last_p)));
+    this->mock_last_p = p;
     return true;
 #endif  // PRINTER
   }
