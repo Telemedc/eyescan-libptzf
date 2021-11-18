@@ -56,6 +56,7 @@ if python3.found()
     link_with: libptzf,
     include_directories: ptzf_incdir,
     install: true,
+    install_dir: '/usr/local/lib/python3.6/dist-packages',
   )
 else
   message('Python3 not found. Not building python module.')

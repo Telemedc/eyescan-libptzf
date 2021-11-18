@@ -5,7 +5,7 @@
 #include <string>
 #include <thread>
 
-#include <libserial/SerialStream.h>
+#include <SerialStream.h>
 
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>

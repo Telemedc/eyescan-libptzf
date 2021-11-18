@@ -1,8 +1,9 @@
-#include "controller.h"
-#include "pybind11/detail/common.h"
 #include "pybind11/pybind11.h"
+#include "pybind11/detail/common.h"
+
 
 #include "ptzf_config.h"
+#include "controller.h"
 #include "position.h"
 #include "controller.h"
 #include "utils.h"
@@ -16,7 +17,7 @@ PYBIND11_MODULE(pyptzf, m) {
   m.attr("__version__") = ptzf::VERSION;
 
   py::class_<ptzf::Position>(m, "Position")
-    .def(py::init<>())
+    .def(py::init<double, double, double, double>(), py::arg("x") = 0.0, py::arg("y") = 0.0, py::arg("z") = 0.0, py::arg("f") = 0.0)
     .def_readwrite("x", &ptzf::Position::x)
     .def_readwrite("y", &ptzf::Position::y)
     .def_readwrite("z", &ptzf::Position::z)
@@ -32,8 +33,8 @@ PYBIND11_MODULE(pyptzf, m) {
     // https://pybind11.readthedocs.io/en/stable/advanced/misc.html#global-interpreter-lock-gil
     .def(py::init<std::string>(), py::call_guard<py::gil_scoped_release>())
     .def(py::init<std::string, bool>(), py::call_guard<py::gil_scoped_release>())
-    .def("connect", &ptzf::Controller::connect)
-    .def("disconnect", &ptzf::Controller::disconnect)
+    .def("connect", &ptzf::Controller::connect, py::call_guard<py::gil_scoped_release>())
+    .def("disconnect", &ptzf::Controller::disconnect, py::call_guard<py::gil_scoped_release>())
     .def("is_connected", &ptzf::Controller::is_connected)
     .def("go", &ptzf::Controller::go, py::call_guard<py::gil_scoped_release>());
 }
