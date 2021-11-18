@@ -43,3 +43,21 @@ ptzf_pc = pkg.generate(libptzf,
   install_dir: get_option('datadir') / 'pkgconfig',
   subdirs: meson.project_name(),
 )
+
+python3 = import('python').find_installation('python3')
+if python3.found()
+  message('Building `pyptzf` python3 module.')
+  pymod = python3.extension_module('pyptzf',
+    sources: ['pymod.cpp'],
+    dependencies: [
+      dependency('python3'),
+      dependency('pybind11'),
+    ],
+    link_with: libptzf,
+    include_directories: ptzf_incdir,
+    install: true,
+    install_dir: '/usr/local/lib/python3.6/dist-packages',
+  )
+else
+  message('Python3 not found. Not building python module.')
+endif

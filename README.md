@@ -39,6 +39,29 @@ In this case, do the ugly `sudo pip3 install --upgrade meson`. You will probably
 wish to `sudo apt uninstall meson` if meson is installed with apt since it may
 conflict.
 
+## Python bindings
+
+A `pyptzf` module will be built and installed in `/usr/local/lib/python3.6/dist-packages`
+if `python3-dev` (python headers) are installed on the system. The interface is
+mostly the same as C++. Simple usage is:
+
+```python
+import pyptzf
+
+c = pyptzf.Controller('/dev/MCB')
+
+p = pyptzf.Position(0,1,2,3)
+
+if not c.go(p):
+  print(f"controller could not go to position: {}")
+```
+
+Would go to xyzf position 0,1,2,3 unless it wasn't possible in which case 
+`controller could not go to position: G0 X0.000 Y1.000 Z2.000 E3.000` would
+be printed.
+
+TODO: `Controller` as a context manager.
+
 # Testing:
 
 ## Valgrind
