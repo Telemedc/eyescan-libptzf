@@ -21,6 +21,7 @@ libptzf = library(meson.project_name(), ptzf_source,
   dependencies: [
     ptzf_deps,
     dependency('boost', modules: ['log', 'system', 'thread']),
+    dependency('nlohmann_json'),
   ],
   cpp_args: cpp_args,
   override_options : ['cxx_std=c++14'],  # because subprjects can override this
@@ -52,12 +53,14 @@ if python3.found()
     dependencies: [
       dependency('python3'),
       dependency('pybind11'),
+      dependency('nlohmann_json'),
     ],
     link_with: libptzf,
     include_directories: ptzf_incdir,
     install: true,
     install_dir: '/usr/local/lib/python3.6/dist-packages',
   )
+  pymod_path = meson.current_build_dir()
 else
   message('Python3 not found. Not building python module.')
 endif

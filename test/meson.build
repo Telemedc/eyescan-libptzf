@@ -1,10 +1,19 @@
 ext = '.cpp'
 unit_tests = [
   'position',
+  'controller',
 ]
 integration_tests = [
   'controller',
   'stress_controller',
+]
+
+python_unit_tests = [
+  'unit_position.py',
+  'unit_controller.py',
+]
+python_integration_tests = [
+  'integration_controller.py',
 ]
 
 # googletest subproject stuff
@@ -45,3 +54,21 @@ foreach basename : integration_tests
     env: ['PTZF_DEBUG=true'],
   )
 endforeach
+
+python3 = import('python').find_installation('python3')
+if python3.found()
+  foreach t : python_unit_tests
+    test(t, python3,
+      args: [files(t)],
+      env: {'PYMOD_PATH': pymod_path},
+      suite: ['python', 'unit'],
+    )
+  endforeach
+  foreach t : python_integration_tests
+    test(t, python3,
+      args: [files(t)],
+      env: {'PYMOD_PATH': pymod_path},
+      suite: ['python', 'integration'],
+    )
+  endforeach
+endif
