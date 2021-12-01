@@ -47,8 +47,8 @@ class ControllerTest : public ::testing::Test {
 TEST_F(ControllerTest, SlowTest) {
   Controller c(PRINTER);
   // @lackdaz you can add/remove positions to tests here
-  auto max = Position::max();
-  auto min = Position::min();
+  auto max = c.get_config().max;
+  auto min = c.get_config().min;
   Position positions[] = {
       Position{max.x, min.y, min.z, min.f},
       Position{max.x, min.y, min.z, min.f},

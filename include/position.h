@@ -1,12 +1,23 @@
 #ifndef AC9580AE_6F70_4581_8717_7CFA1101284A
 #define AC9580AE_6F70_4581_8717_7CFA1101284A
 
+#include <experimental/optional>
+#include <string>
+#include <valarray>
+#include <variant>
 namespace ptzf {
 
 /**
  * Data structure of a Camera/Printer position.
  */
 struct Position {
+  enum class Key {
+    x = 1,
+    y = 2,
+    z = 3,
+    f = 4,
+  };
+
   /** Pan. */
   double x;
   /** Tilt */
@@ -15,18 +26,73 @@ struct Position {
   double z;
   /** Focus */
   double f;
-  /**
-   * @brief Checks whether the position is valid (within `min()` and `max()`)
-   */
-  bool is_valid() const;
-  /**
-   * @brief Maximum allowable position for the printer.
-   */
-  static const Position& max();
-  /**
-   * @brief Minimum allowable position for the printer.
-   */
-  static const Position& min();
+
+  /** Return a Position from json string. Can throw. */
+  static Position from_json(const std::string& s);
+  std::string to_json() const;
+
+  // This exists mostly as a python __getitem__
+  double operator[](Key key) const {
+    switch (key) {
+      // clang-format off
+      case (Key::x): { return x; }
+      case (Key::y): { return y; }
+      case (Key::z): { return z; }
+      case (Key::f): { return f; }
+      // clang-format on
+      default:
+        // logic error - new enum is not handled above
+        std::abort();
+    }
+  }
+  Position operator+(const Position& o) const {
+    return {x + o.x, y + o.y, z + o.z, f + o.f};
+  }
+  Position operator-(const Position& o) const {
+    return {x - o.x, y - o.y, z - o.z, f - o.f};
+  }
+  Position operator*(const Position& o) const {
+    return {x * o.x, y * o.y, z * o.z, f * o.f};
+  }
+  Position& operator+=(const Position& o) {
+    x += o.x;
+    y += o.y;
+    z += o.z;
+    f += o.f;
+    return *this;
+  }
+  Position& operator-=(const Position& o) {
+    x -= o.x;
+    y -= o.y;
+    z -= o.z;
+    f -= o.f;
+    return *this;
+  }
+  Position& operator*=(const Position& o) {
+    x *= o.x;
+    y *= o.y;
+    z *= o.z;
+    f *= o.f;
+    return *this;
+  }
+  bool operator<(const Position& o) const {
+    return x < o.x && y < o.y && z < o.z && f < o.f;
+  }
+  bool operator<=(const Position& o) const {
+    return x <= o.x && y <= o.y && z <= o.z && f <= o.f;
+  }
+  bool operator>(const Position& o) const {
+    return x > o.x && y > o.y && z > o.z && f > o.f;
+  }
+  bool operator>=(const Position& o) const {
+    return x >= o.x && y >= o.y && z >= o.z && f >= o.f;
+  }
+  bool operator==(const Position& o) const {
+    return x == o.x && y == o.y && z == o.z && f == o.f;
+  }
+  bool operator!=(const Position& o) const {
+    return !(*this == o);
+  }
 };
 
 }  // namespace ptzf

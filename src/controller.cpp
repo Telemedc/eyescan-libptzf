@@ -5,13 +5,16 @@
 #include <string>
 #include <thread>
 
-#include <SerialStream.h>
+#include <nlohmann/json.hpp>
+
+#include <libserial/SerialStream.h>
 
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
 
 #include "controller.h"
+#include "position.h"
 #include "utils.h"
 
 namespace logging = boost::log;
@@ -34,6 +37,27 @@ const char BUSY_CODE[] = "echo:busy:";
  * cstring to listen for when error occurs.
  */
 const char ERROR_CODE[] = "error";
+
+Controller::Config
+Controller::Config::from_json(const std::string &s) {
+  auto conf = nlohmann::json::parse(s);
+  return Config{
+    conf["device"].get<std::string>(),
+    Position::from_json(conf["min"].get<std::string>()),
+    Position::from_json(conf["max"].get<std::string>()),
+    conf["do_connect"].get<bool>()
+  };
+}
+
+std::string
+Controller::Config::to_json() const {
+  nlohmann::json j;
+  j["device"] = device;
+  j["min"] = min.to_json();
+  j["max"] = max.to_json();
+  j["do_connect"] = do_connect;
+  return j.dump();
+}
 
 #ifndef PRINTER
 /**
@@ -96,8 +120,8 @@ static bool wait_for_ok(LibSerial::SerialStream& stream) {
 
 struct Controller::Impl {
  public:
-  Impl(std::string device, bool do_connect = true)
-      : device(device)
+  Impl(Controller::Config&& config)
+      : config(config)
 #ifdef PRINTER
         ,
         stream()
@@ -112,7 +136,7 @@ struct Controller::Impl {
       logging::core::get()->set_filter(logging::trivial::severity >=
                                        logging::trivial::info);
     }
-    if (do_connect) {
+    if (config.do_connect) {
       this->connect();
     }
   }
@@ -139,15 +163,11 @@ struct Controller::Impl {
     // note: std::endl includes a flush
     this->stream << "G0 F2400" << std::endl;
     LOG(debug) << "Speed set: 2400mm/min";
-    this->stream << "G28" << std::endl;
-    LOG(debug) << "G28 Auto Home set";
-
-    return wait_for_ok(this->stream);
+    go_home();
 #else
     // it normally takes about 1000ms to connect
     std::this_thread::sleep_for(std::chrono::seconds(1));
     mock_connected = true;
-    (void)wait_for_ok;  // because unused-function otherwise
     return mock_connected;
 #endif  // PRINTER
   }
@@ -157,18 +177,18 @@ struct Controller::Impl {
     // this signals all threads to stop
     if (this->stream.IsOpen()) {
 #endif  // PRINTER
-      LOG(debug) << "Closing: " << this->device;
+      LOG(debug) << "Closing: " << config.device;
 #ifdef PRINTER
       this->stream.Close();
     }
 #else
     mock_connected = false;
 #endif  // PRINTER
-    LOG(debug) << "Closed: " << this->device;
+    LOG(debug) << "Closed: " << config.device;
     return true;
   }
 
-  bool is_connected() {
+  bool is_connected() const {
 #ifdef PRINTER
     return this->stream.IsOpen();
 #else
@@ -177,16 +197,12 @@ struct Controller::Impl {
   }
 
   bool go(Position p) {
-    if (!p.is_valid()) {
+    if (!config.is_valid_position(p)) {
       LOG(error) << "invalid position: " << position_to_string(p);
       return false;
     }
-#ifdef PRINTER
     // check the stream is open
     if (!this->is_connected()) {
-#else
-    if (!mock_connected) {
-#endif  // PRINTER
       LOG(error) << "Internal stream is closed.";
       return false;
     }
@@ -219,9 +235,24 @@ struct Controller::Impl {
 #endif  // PRINTER
   }
 
+  bool go_home() {
+    // check the stream is open
+    if (!this->is_connected()) {
+      LOG(error) << "Internal stream is closed.";
+      return false;
+    }
+#ifdef PRINTER
+    this->stream << "G28" << std::endl;
+    return wait_for_ok(this->stream);
+#else
+    mock_last_p = config.min;
+    (void)wait_for_ok;
+    return true;
+#endif
+  }
+
+  const Controller::Config config;
  private:
-  /** The device name */
-  std::string device;
 #ifdef PRINTER
   /** LibSerial::SerialStream for the device */
   LibSerial::SerialStream stream;
@@ -231,8 +262,11 @@ struct Controller::Impl {
 #endif  // PRINTER
 };
 
+Controller::Controller(Config&& config)
+    : impl(std::make_unique<Impl>(std::forward<Config>(config))) {}
 Controller::Controller(std::string device, bool do_connect)
-    : impl(std::make_unique<Impl>(device, do_connect)) {}
+    : impl(std::make_unique<Impl>(Config(
+      std::forward<std::string>(device), do_connect))) {}
 Controller::~Controller() = default;
 
 bool Controller::connect() {
@@ -241,6 +275,11 @@ bool Controller::connect() {
 
 bool Controller::disconnect() {
   return impl->disconnect();
+}
+
+const Controller::Config&
+Controller::get_config() const {
+  return impl->config;
 }
 
 bool Controller::is_connected() const {

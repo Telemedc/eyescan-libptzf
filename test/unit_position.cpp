@@ -8,41 +8,82 @@ namespace {
 // The fixture for testing class Controller.
 class PositionTest : public ::testing::Test {};
 
-// ensures is_valid works so positions can't be out of range
-// this could potentially break hardware, so it's pretty important
-TEST_F(PositionTest, TestIsValid) {
-  Position too_big{
-      .x = Position::max().x + 1.0,
-      .y = Position::max().y + 1.0,
-      .z = Position::max().z + 1.0,
-      .f = Position::max().f + 1.0,
-  };
+// ensure member order is correct
+TEST_F(PositionTest, TestMembers) {
+  Position p{1,2,3,4};
 
-  Position not_too_big{
-      .x = Position::max().x - 1.0,
-      .y = Position::max().y - 1.0,
-      .z = Position::max().z - 1.0,
-      .f = Position::max().f - 1.0,
-  };
+  EXPECT_EQ(p.x, 1.0);
+  EXPECT_EQ(p.y, 2.0);
+  EXPECT_EQ(p.z, 3.0);
+  EXPECT_EQ(p.f, 4.0);
+}
 
-  Position too_small{
-      .x = Position::min().x - 1.0,
-      .y = Position::min().y - 1.0,
-      .z = Position::min().z - 1.0,
-      .f = Position::min().f - 1.0,
-  };
+TEST_F(PositionTest, TestJson) {
+  Position p{1,2,3,4};
+  EXPECT_EQ(p, Position::from_json(p.to_json()));
+}
 
-  Position not_too_small{
-      .x = Position::min().x + 1.0,
-      .y = Position::min().y + 1.0,
-      .z = Position::min().z + 1.0,
-      .f = Position::min().f + 1.0,
-  };
+// ensure key based access works (important for Python)
+TEST_F(PositionTest, TestKey) {
+  Position p{1,2,3,4};
 
-  EXPECT_FALSE(too_big.is_valid());
-  EXPECT_TRUE(not_too_big.is_valid());
-  EXPECT_FALSE(too_small.is_valid());
-  EXPECT_TRUE(not_too_small.is_valid());
+  EXPECT_EQ(p[Position::Key::x], 1.0);
+  EXPECT_EQ(p[Position::Key::y], 2.0);
+  EXPECT_EQ(p[Position::Key::z], 3.0);
+  EXPECT_EQ(p[Position::Key::f], 4.0);
+}
+
+// check operator overloading is correct
+TEST_F(PositionTest, TestOverloading) {
+  Position p{1,2,3,4};
+
+  // operator+
+  auto p2 = p + p;
+
+  EXPECT_EQ(p2.x, 2.0);
+  EXPECT_EQ(p2.y, 4.0);
+  EXPECT_EQ(p2.z, 6.0);
+  EXPECT_EQ(p2.f, 8.0);
+
+  // operator*
+  auto p3 = p * p;
+  EXPECT_EQ(p3.x, 1.0);
+  EXPECT_EQ(p3.y, 4.0);
+  EXPECT_EQ(p3.z, 9.0);
+  EXPECT_EQ(p3.f, 16.0);
+
+  // operator +=
+  p += p;
+  EXPECT_EQ(p.x, 2.0);
+  EXPECT_EQ(p.y, 4.0);
+  EXPECT_EQ(p.z, 6.0);
+  EXPECT_EQ(p.f, 8.0);
+
+  // operator*=
+  p *= p;
+  EXPECT_EQ(p.x, 4.0);
+  EXPECT_EQ(p.y, 16.0);
+  EXPECT_EQ(p.z, 36.0);
+  EXPECT_EQ(p.f, 64.0);
+
+  auto p0 = Position{};
+
+  // operator<
+  EXPECT_LT(p0, p);
+
+  // operator<=
+  EXPECT_LE(p, p);
+  EXPECT_LE(p0, p);
+
+  // operator>
+  EXPECT_GT(p, p0);
+
+  // operator>=
+  EXPECT_GE(p, p);
+  EXPECT_GE(p, p0);
+
+  // operator==
+  EXPECT_EQ(p, p);
 }
 
 }  // namespace
