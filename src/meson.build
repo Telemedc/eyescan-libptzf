@@ -4,8 +4,9 @@ ptzf_source = [
   'utils.cpp',
 ]
 
+libserial = dependency('libserial')
 ptzf_deps = [
-  dependency('libserial'),
+  libserial,
 ]
 
 cpp_args = []
@@ -15,6 +16,10 @@ if get_option('PRINTER') != ''
   cpp_args += '-DPRINTER="' + printer_device + '"'
 else
   warning('PRINTER not defined with `-DPRINTER=...` PRINTER will be simulated.')
+endif
+
+if libserial.version() >= '1.0.0'
+  cpp_args += '-DLIBSERIAL_GE_1_0_0'
 endif
 
 libptzf = library(meson.project_name(), ptzf_source,

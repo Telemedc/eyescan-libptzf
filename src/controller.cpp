@@ -7,7 +7,11 @@
 
 #include <nlohmann/json.hpp>
 // on ubuntu 20.04 prefix "libserial/""
+#ifdef LIBSERIAL_GE_1_0_0
+#include <libserial/SerialStream.h>
+#else
 #include <SerialStream.h>
+#endif
 
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
