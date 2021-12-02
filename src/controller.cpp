@@ -6,8 +6,8 @@
 #include <thread>
 
 #include <nlohmann/json.hpp>
-
-#include <libserial/SerialStream.h>
+// on ubuntu 20.04 prefix "libserial/""
+#include <SerialStream.h>
 
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
@@ -145,8 +145,8 @@ struct Controller::Impl {
   bool connect() {
 #ifdef PRINTER
     try {
-      LOG(debug) << "Opening: " << this->device;
-      this->stream.Open(this->device, std::ios::in | std::ios::out);
+      LOG(debug) << "Opening: " << config.device;
+      this->stream.Open(config.device, std::ios::in | std::ios::out);
     } catch (const SerialPort::OpenFailed& e) {
       LOG(error) << "Open failed because: " << e.what();
       return false;
@@ -157,13 +157,13 @@ struct Controller::Impl {
       LOG(error) << "Open failed for unknown reason.";
       return false;
     }
-    LOG(debug) << "Opened: " << this->device;
+    LOG(debug) << "Opened: " << config.device;
     this->stream.SetBaudRate(LibSerial::SerialStreamBuf::BAUD_115200);
     LOG(debug) << "Baud set: 115200";
     // note: std::endl includes a flush
     this->stream << "G0 F2400" << std::endl;
     LOG(debug) << "Speed set: 2400mm/min";
-    go_home();
+    return go_home();
 #else
     // it normally takes about 1000ms to connect
     std::this_thread::sleep_for(std::chrono::seconds(1));
