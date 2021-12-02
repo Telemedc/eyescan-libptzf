@@ -11,7 +11,7 @@ namespace ptzf {
 
 constexpr auto DEFAULT_DEVICE = "/dev/MCB";
 constexpr Position DEFAULT_MIN_POSITION = {0,0,0,0};
-constexpr Position DEFAULT_MAX_POSITION = {0,0,0,0};
+constexpr Position DEFAULT_MAX_POSITION = {200,200,200,200};
 constexpr bool DEFAULT_DO_CONNECT = true;
 
 /**
