@@ -6,6 +6,7 @@
 #include <exception>
 #include <nlohmann/json.hpp>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 #include "ptzf_config.h"
@@ -110,9 +111,26 @@ PYBIND11_MODULE(pyptzf, m) {
     // The gil must be released any IO to not hang python when using the
     // threading module. This way IO can be overlapped with Python work.
     // https://pybind11.readthedocs.io/en/stable/advanced/misc.html#global-interpreter-lock-gil
-  controller.def(py::init<std::string>(), py::call_guard<py::gil_scoped_release>())
-    .def(py::init<std::string, bool>(), py::call_guard<py::gil_scoped_release>())
+  controller.def(py::init<std::string, bool>(),
+      py::arg("device"), py::arg("do_connect") = false,
+      py::call_guard<py::gil_scoped_release>())
+    .def(py::init<ptzf::Controller::Config>(),
+      py::arg("config"),
+      py::call_guard<py::gil_scoped_release>())
     .def("connect", &ptzf::Controller::connect, py::call_guard<py::gil_scoped_release>())
+    .def("__enter__", [](ptzf::Controller& self){
+      self.connect();
+      return &self;
+    })
+    .def("__exit__", [](ptzf::Controller& self, py::object exc_type, py::object exc_value, py::object tb) {
+      // we don't care what or if went wrong. We just call disconnect.
+      (void)exc_type;
+      (void)exc_value;
+      (void)tb;
+      // for the moment, disconnect always returns true. this might change in
+      // the future.
+      (void)self.disconnect();
+    })
     .def("disconnect", &ptzf::Controller::disconnect, py::call_guard<py::gil_scoped_release>())
     .def("is_connected", &ptzf::Controller::is_connected)
     .def("go", &ptzf::Controller::go, py::call_guard<py::gil_scoped_release>());
@@ -123,7 +141,9 @@ PYBIND11_MODULE(pyptzf, m) {
       py::arg("device") = std::string(ptzf::DEFAULT_DEVICE),
       py::arg("min") = ptzf::DEFAULT_MIN_POSITION,
       py::arg("max") = ptzf::DEFAULT_MAX_POSITION,
-      py::arg("do_connect") = ptzf::DEFAULT_DO_CONNECT)
+      py::arg("do_connect") = false)  // for python it's better to not connect 
+      // on construct and always use `connect` disconnect or the context
+      // manager.
     .def_property_readonly_static("DEFAULT_DEVICE", [](){ return ptzf::DEFAULT_DEVICE; })
     .def_property_readonly_static("DEFAULT_MIN_POSITION", [](){ return ptzf::DEFAULT_MIN_POSITION; })
     .def_property_readonly_static("DEFAULT_MAX_POSITION", [](){ return ptzf::DEFAULT_MAX_POSITION; })
