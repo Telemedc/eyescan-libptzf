@@ -168,8 +168,9 @@ PYBIND11_MODULE(pyptzf, m) {
     })
     .def("disconnect", &ptzf::Controller::disconnect, py::call_guard<py::gil_scoped_release>())
     .def("is_connected", &ptzf::Controller::is_connected)
-    .def("go", &ptzf::Controller::go, py::call_guard<py::gil_scoped_release>());
-  
+    .def("go", &ptzf::Controller::go, py::call_guard<py::gil_scoped_release>())
+    .def("go_home", &ptzf::Controller::go_home, py::call_guard<py::gil_scoped_release>());
+
   py::class_<ptzf::Controller::Config> config(controller, "Config");
   config.def_readonly("device", &ptzf::Controller::Config::device)
     .def(py::init<std::string, const ptzf::Position, const ptzf::Position, bool>(),
