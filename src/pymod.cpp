@@ -62,11 +62,7 @@ PYBIND11_MODULE(pyptzf, m) {
     .def_static("from_json", ptzf::Position::from_json)
     .def("to_json", &ptzf::Position::to_json)
     .def_static("keys", [](){
-      return py::make_tuple(
-        ptzf::Position::Key::x,
-        ptzf::Position::Key::y,
-        ptzf::Position::Key::z,
-        ptzf::Position::Key::f);
+      return py::make_tuple("x", "y", "z", "f");
     })
     .def(py::self + py::self)
     .def(py::self - py::self)
