@@ -2,6 +2,7 @@
 #include "pybind11/detail/common.h"
 #include <pybind11/operators.h>
 #include "pybind11/cast.h"
+#include "pybind11/attr.h"
 
 #include <exception>
 #include <nlohmann/json.hpp>
@@ -86,6 +87,44 @@ PYBIND11_MODULE(pyptzf, m) {
         return p.z;
       } else if (key == "f") {
         return p.f;
+      } else {
+        std::stringstream ss;
+        ss << "`" << key << "`" << " not a valid key (use `x`,`y`,`z` or `f`)";
+        throw py::key_error(ss.str());
+      }
+    })
+    .def("__setitem__", [](ptzf::Position& p, ptzf::Position::Key key, float v){
+      switch (key) {
+        case (ptzf::Position::Key::x): {
+          p.x = v;
+          break;
+        }
+        case (ptzf::Position::Key::y): {
+          p.y = v;
+          break;
+        }
+        case (ptzf::Position::Key::z): {
+          p.z = v;
+          break;
+        }
+        case (ptzf::Position::Key::f): {
+          p.f = v;
+          break;
+        }
+        default: {
+          throw py::key_error("Invalid key. Probably __setitem__ broken.");
+        }
+      }
+    })
+    .def("__setitem__", [](ptzf::Position& p, std::string key, float v){
+      if (key == "x") {
+        p.x = v;
+      } else if (key == "y") {
+        p.y = v;
+      } else if (key == "z") {
+        p.z = v;
+      } else if (key == "f") {
+        p.f = v;
       } else {
         std::stringstream ss;
         ss << "`" << key << "`" << " not a valid key (use `x`,`y`,`z` or `f`)";
