@@ -294,4 +294,8 @@ bool Controller::go(Position p) {
   return impl->go(p);
 }
 
+bool Controller::go_home() {
+  return impl->go_home();
+}
+
 }  // namespace ptzf
