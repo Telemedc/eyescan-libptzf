@@ -38,9 +38,15 @@ bool wait_for_ok(LibSerial::SerialStream& stream) {
   // read lines from the stream until line starts with ok
   LOG(debug) << "Waiting for \"OK\"";
   std::string line;
+  int lines_parsed = 0;
   while (stream.IsOpen()) {
     std::getline(stream, line);
     LOG(debug) << "recv:" << line;
+    // to prevent infinite loop in case of junk data from printer
+    if (lines_parsed++ > 1000) {
+      LOG(error) << "Could not find OK or ERROR. `wait_for_ok` failed.";
+      return false;
+    }
     // if line starts with OK_CODE
     if (!line.compare(0, sizeof(OK_CODE), OK_CODE)) {
       LOG(debug) << "Found OK_CODE in line: \"" << line << '"';
