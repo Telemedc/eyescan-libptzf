@@ -129,17 +129,29 @@ struct Controller::Impl {
     // get limits from printer
     this->min_ = get_minimum_limit(this->stream);
     if (this->min_) {
+      if (this->config.min < this->min_.value()) {
+        LOG(error) << "Config minimum (" << config.min.to_gcode()
+                   << ") less than printer minimum ("
+                   << this->min().value().to_gcode() << ")";
+        return false;
+      }
       LOG(debug) << "Minimum limit" << this->min_.value().to_gcode();
     }
     this->max_ = get_maximum_limit(this->stream);
     if (this->max_) {
+      if (this->config.max > this->max_.value()) {
+        LOG(error) << "Config maximum (" << config.max.to_gcode()
+                   << ") greater than printer maximum ("
+                   << this->max().value().to_gcode() << ")";
+        return false;
+      }
       LOG(debug) << "Maximum limit" << this->max_.value().to_gcode();
     }
-    if not (this->max_ && this->min_) {
+    if (!(this->max_ && this->min_)) {
       LOG(error) << "Failed to get limits from " PRINTER;
-      return false
+      return false;
     }
-    return true
+    return false;
 #else
     // it normally takes about 1000ms to connect
     std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -234,7 +246,7 @@ struct Controller::Impl {
       LOG(error) << "call `connect` first";
       return nullopt;
     }
-    return max_;
+    return std::min(max_.value(), config.max);
   }
 
   optional<Position> min() {
@@ -242,7 +254,7 @@ struct Controller::Impl {
       LOG(error) << "can't get min position without connecting";
       return nullopt;
     }
-    return min_;
+    return std::max(min_.value(), config.min);
   }
 
   bool is_valid_position(Position p) {
