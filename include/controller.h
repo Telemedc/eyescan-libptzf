@@ -111,6 +111,24 @@ class Controller final {
    */
   bool go(Position p);
 
+  /**
+   * Get the minimum Position supported by printer and config.
+   *
+   * Returns nullopt if not connected.
+   */
+  std::experimental::optional<Position> min();
+
+  /**
+   * Get the maximum Position supported by printer and config.
+   */
+  std::experimental::optional<Position> max();
+
+  /**
+   * Returns true if p is within the Controller and Config's limits
+   */
+  bool is_valid_position(Position p);
+
+
  private:
   struct Impl;
   std::unique_ptr<Impl> impl;

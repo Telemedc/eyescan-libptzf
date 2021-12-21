@@ -5,6 +5,7 @@
 #include <string>
 #include <valarray>
 #include <variant>
+
 namespace ptzf {
 
 /**
@@ -30,6 +31,14 @@ struct Position {
   /** Return a Position from json string. Can throw. */
   static Position from_json(const std::string& s);
   std::string to_json() const;
+
+  /**
+   * Return a Position from gcode string (M114 return)
+   * (or nullopt if the string could not be parsed)
+   */
+  static std::experimental::optional<Position> from_gcode(
+      const std::string& line);
+  std::string to_gcode() const;
 
   // This exists mostly as a python __getitem__
   double operator[](Key key) const {
@@ -90,9 +99,7 @@ struct Position {
   bool operator==(const Position& o) const {
     return x == o.x && y == o.y && z == o.z && f == o.f;
   }
-  bool operator!=(const Position& o) const {
-    return !(*this == o);
-  }
+  bool operator!=(const Position& o) const { return !(*this == o); }
 };
 
 }  // namespace ptzf

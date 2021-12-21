@@ -1,8 +1,9 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/detail/common.h"
-#include <pybind11/operators.h>
+#include "pybind11/operators.h"
 #include "pybind11/cast.h"
 #include "pybind11/attr.h"
+#include "pybind11/stl.h"
 
 #include <exception>
 #include <nlohmann/json.hpp>
@@ -19,6 +20,13 @@
 
 namespace py = pybind11;
 
+namespace pybind11 {
+namespace detail {
+template <typename T>
+struct type_caster<std::experimental::optional<T>>
+    : optional_caster<std::experimental::optional<T>> {};
+}  // namespace detail
+}  // namespace pybind11
 
 // clang-format off
 
@@ -62,6 +70,8 @@ PYBIND11_MODULE(pyptzf, m) {
     .def_readwrite("f", &ptzf::Position::f)
     .def_static("from_json", ptzf::Position::from_json)
     .def("to_json", &ptzf::Position::to_json)
+    .def_static("from_gcode", ptzf::Position::from_gcode)
+    .def("to_gcode", &ptzf::Position::to_gcode)
     .def_static("keys", [](){
       return py::make_tuple("x", "y", "z", "f");
     })
@@ -169,7 +179,10 @@ PYBIND11_MODULE(pyptzf, m) {
     .def("disconnect", &ptzf::Controller::disconnect, py::call_guard<py::gil_scoped_release>())
     .def("is_connected", &ptzf::Controller::is_connected)
     .def("go", &ptzf::Controller::go, py::call_guard<py::gil_scoped_release>())
-    .def("go_home", &ptzf::Controller::go_home, py::call_guard<py::gil_scoped_release>());
+    .def("go_home", &ptzf::Controller::go_home, py::call_guard<py::gil_scoped_release>())
+    .def_property_readonly("min", &ptzf::Controller::min)
+    .def_property_readonly("max", &ptzf::Controller::max)
+    .def("is_valid_position", &ptzf::Controller::is_valid_position);
 
   py::class_<ptzf::Controller::Config> config(controller, "Config");
   config.def_readonly("device", &ptzf::Controller::Config::device)

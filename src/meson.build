@@ -2,6 +2,7 @@ ptzf_source = [
   'position.cpp',
   'controller.cpp',
   'utils.cpp',
+  'serial.cpp',
 ]
 
 libserial = dependency('libserial')

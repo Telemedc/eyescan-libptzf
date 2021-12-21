@@ -1,5 +1,6 @@
 #include <chrono>
 #include <cmath>
+#include <experimental/optional>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -19,7 +20,11 @@
 
 #include "controller.h"
 #include "position.h"
+#include "serial.h"
 #include "utils.h"
+
+using std::experimental::nullopt;
+using std::experimental::optional;
 
 namespace logging = boost::log;
 
@@ -27,34 +32,15 @@ namespace logging = boost::log;
 
 namespace ptzf {
 
-/**
- * cstring to listen for when go destination is reached.
- */
-const char OK_CODE[] = "ok P63 B31";
-
-/**
- * code to indicate printer is busy
- */
-const char BUSY_CODE[] = "echo:busy:";
-
-/**
- * cstring to listen for when error occurs.
- */
-const char ERROR_CODE[] = "error";
-
-Controller::Config
-Controller::Config::from_json(const std::string &s) {
+Controller::Config Controller::Config::from_json(const std::string& s) {
   auto conf = nlohmann::json::parse(s);
-  return Config{
-    conf["device"].get<std::string>(),
-    Position::from_json(conf["min"].get<std::string>()),
-    Position::from_json(conf["max"].get<std::string>()),
-    conf["do_connect"].get<bool>()
-  };
+  return Config{conf["device"].get<std::string>(),
+                Position::from_json(conf["min"].get<std::string>()),
+                Position::from_json(conf["max"].get<std::string>()),
+                conf["do_connect"].get<bool>()};
 }
 
-std::string
-Controller::Config::to_json() const {
+std::string Controller::Config::to_json() const {
   nlohmann::json j;
   j["device"] = device;
   j["min"] = min.to_json();
@@ -88,44 +74,12 @@ int ms_to_travel(const ptzf::Position& a, const ptzf::Position& b) {
 }
 #endif  // PRINTER
 
-static bool wait_for_ok(LibSerial::SerialStream& stream) {
-  if (!stream.IsOpen()) {
-    LOG(error) << "Stream not open. Can't wait for \"OK\"";
-    return false;
-  }
-
-  // read lines from the stream until line starts with ok
-  LOG(debug) << "Waiting for \"OK\"";
-  std::string line;
-  while (stream.IsOpen()) {
-    std::getline(stream, line);
-    LOG(debug) << "recv:" << line;
-    // if line starts with OK_CODE
-    if (!line.compare(0, sizeof(OK_CODE), OK_CODE)) {
-      LOG(debug) << "Found OK_CODE in line: \"" << line << '"';
-      return true;
-    };
-    // if line starts with BUSY_CODE
-    if (!line.compare(0, sizeof(BUSY_CODE), BUSY_CODE)) {
-      LOG(debug) << "Found BUSY_CODE in line: \"" << line << '"';
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      continue;
-    };
-    // if line starts with ERROR_CODE.
-    if (!line.compare(0, sizeof(ERROR_CODE), ERROR_CODE)) {
-      LOG(error) << line;
-      return false;
-    };
-  }
-
-  LOG(error) << "reached end of context somehow";
-  return false;
-}
-
 struct Controller::Impl {
  public:
   Impl(Controller::Config&& config)
-      : config(config)
+      : config(config),
+        max_(nullopt),
+        min_(nullopt)
 #ifdef PRINTER
         ,
         stream()
@@ -167,11 +121,31 @@ struct Controller::Impl {
     // note: std::endl includes a flush
     this->stream << "G0 F2400" << std::endl;
     LOG(debug) << "Speed set: 2400mm/min";
-    return go_home();
+    LOG(debug) << "Getting limits from printer.";
+    if (!go_home()) {
+      LOG(error) << "Cannot connect becuase auto-home failed.";
+      return false;
+    }
+    // get limits from printer
+    this->min_ = get_minimum_limit(this->stream);
+    if (this->min_) {
+      LOG(debug) << "Minimum limit" << this->min_.value().to_gcode();
+    }
+    this->max_ = get_maximum_limit(this->stream);
+    if (this->max_) {
+      LOG(debug) << "Maximum limit" << this->max_.value().to_gcode();
+    }
+    if not (this->max_ && this->min_) {
+      LOG(error) << "Failed to get limits from " PRINTER;
+      return false
+    }
+    return true
 #else
     // it normally takes about 1000ms to connect
     std::this_thread::sleep_for(std::chrono::seconds(1));
     mock_connected = true;
+    this->min_ = Position{0, 0, 0, 0};
+    this->max_ = Position{999, 999, 999, 999};
     return mock_connected;
 #endif  // PRINTER
   }
@@ -201,8 +175,8 @@ struct Controller::Impl {
   }
 
   bool go(Position p) {
-    if (!config.is_valid_position(p)) {
-      LOG(error) << "invalid position: " << position_to_string(p);
+    if (!is_valid_position(p)) {
+      LOG(error) << "invalid position: " << p.to_gcode();
       return false;
     }
     // check the stream is open
@@ -216,8 +190,8 @@ struct Controller::Impl {
 #endif  // PRINTER
 
     // send the position to the stream
-    auto s = position_to_string(p);
-    LOG(debug) << "send:" << s;
+    auto s = p.to_gcode();
+    LOG(debug) << "send:" << p.to_gcode();
 #ifdef PRINTER
     this->stream << s << std::endl;
 #endif  // PRINTER
@@ -255,8 +229,43 @@ struct Controller::Impl {
 #endif
   }
 
+  optional<Position> max() {
+    if (!is_connected()) {
+      LOG(error) << "call `connect` first";
+      return nullopt;
+    }
+    return max_;
+  }
+
+  optional<Position> min() {
+    if (!is_connected()) {
+      LOG(error) << "can't get min position without connecting";
+      return nullopt;
+    }
+    return min_;
+  }
+
+  bool is_valid_position(Position p) {
+    if (!is_connected()) {
+      LOG(error) << "can't check valid position without connecting";
+    }
+    // check if within soft (Config) limits
+    if (!config.is_valid_position(p)) {
+      return false;
+    }
+    if (!(min_ && max_)) {
+      LOG(error)
+          << "no printer limits. likely `get_limits` or `connect` broken";
+      return false;
+    }
+    return p <= max_.value() && p >= min_.value();
+  }
+
   const Controller::Config config;
+
  private:
+  optional<ptzf::Position> max_;
+  optional<ptzf::Position> min_;
 #ifdef PRINTER
   /** LibSerial::SerialStream for the device */
   LibSerial::SerialStream stream;
@@ -269,8 +278,8 @@ struct Controller::Impl {
 Controller::Controller(Config&& config)
     : impl(std::make_unique<Impl>(std::forward<Config>(config))) {}
 Controller::Controller(std::string device, bool do_connect)
-    : impl(std::make_unique<Impl>(Config(
-      std::forward<std::string>(device), do_connect))) {}
+    : impl(std::make_unique<Impl>(
+          Config(std::forward<std::string>(device), do_connect))) {}
 Controller::~Controller() = default;
 
 bool Controller::connect() {
@@ -281,8 +290,7 @@ bool Controller::disconnect() {
   return impl->disconnect();
 }
 
-const Controller::Config&
-Controller::get_config() const {
+const Controller::Config& Controller::get_config() const {
   return impl->config;
 }
 
@@ -296,6 +304,18 @@ bool Controller::go(Position p) {
 
 bool Controller::go_home() {
   return impl->go_home();
+}
+
+optional<Position> Controller::max() {
+  return impl->max();
+}
+
+optional<Position> Controller::min() {
+  return impl->min();
+}
+
+bool Controller::is_valid_position(Position p) {
+  return impl->is_valid_position(p);
 }
 
 }  // namespace ptzf
