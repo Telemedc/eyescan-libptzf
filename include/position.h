@@ -36,7 +36,7 @@ struct Position {
    * Return a Position from gcode string (M114 return)
    * (or nullopt if the string could not be parsed)
    */
-  static std::experimental::optional<Position> from_gcode(
+  static std::experimental::optional<Position> from_m114(
       const std::string& line);
   std::string to_gcode() const;
 

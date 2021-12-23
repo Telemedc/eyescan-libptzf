@@ -15,7 +15,8 @@ namespace ptzf {
 /**
  * cstring to listen for when go destination is reached.
  */
-const char OK_CODE[] = "ok P63 B31";
+const char OK_CODE_P63[] = "ok P63 B31";
+const char OK_CODE_P62[] = "ok P62 B31";
 
 /**
  * code to indicate printer is busy

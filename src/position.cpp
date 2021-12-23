@@ -35,7 +35,7 @@ Position::to_json() const {
 }
 
 optional<Position>
-Position::from_gcode(const std::string &line) {
+Position::from_m114(const std::string &line) {
   return string_to_position(line);
 }
 

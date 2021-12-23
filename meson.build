@@ -5,7 +5,7 @@ project('ptzf', ['cpp'],
   meson_version: '>= 0.56.0',
   license: 'LGPL',
   default_options: [
-    'cpp_std=c++17',
+    'cpp_std=c++14',
     'warning_level=2',  # -Wall
     'werror=true',  # -Werror
   ],

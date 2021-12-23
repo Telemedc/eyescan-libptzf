@@ -6,13 +6,14 @@
 #include <string>
 #include <thread>
 
-#include <nlohmann/json.hpp>
 // on ubuntu 20.04 prefix "libserial/""
 #ifdef LIBSERIAL_GE_1_0_0
 #include <libserial/SerialStream.h>
 #else
 #include <SerialStream.h>
 #endif
+
+#include <nlohmann/json.hpp>
 
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
@@ -120,38 +121,40 @@ struct Controller::Impl {
     LOG(debug) << "Baud set: 115200";
     // note: std::endl includes a flush
     this->stream << "G0 F2400" << std::endl;
+    if (!wait_for_ok(this->stream)) {
+      LOG(error) << "Didn't get OK after `G0 F2400`";
+      return false;
+    }
     LOG(debug) << "Speed set: 2400mm/min";
-    LOG(debug) << "Getting limits from printer.";
     if (!go_home()) {
       LOG(error) << "Cannot connect becuase auto-home failed.";
       return false;
     }
-    // get limits from printer
+    LOG(debug) << "G28 OK";
+    LOG(debug) << "Getting limits from printer.";
     this->min_ = get_minimum_limit(this->stream);
     if (this->min_) {
       if (this->config.min < this->min_.value()) {
-        LOG(error) << "Config minimum (" << config.min.to_gcode()
+        LOG(warning) << "Config minimum (" << config.min.to_gcode()
                    << ") less than printer minimum ("
                    << this->min().value().to_gcode() << ")";
-        return false;
       }
-      LOG(debug) << "Minimum limit" << this->min_.value().to_gcode();
+      LOG(debug) << "Minimum limit" << this->min().value().to_gcode();
     }
     this->max_ = get_maximum_limit(this->stream);
     if (this->max_) {
       if (this->config.max > this->max_.value()) {
-        LOG(error) << "Config maximum (" << config.max.to_gcode()
+        LOG(warning) << "Config maximum (" << config.max.to_gcode()
                    << ") greater than printer maximum ("
                    << this->max().value().to_gcode() << ")";
-        return false;
       }
-      LOG(debug) << "Maximum limit" << this->max_.value().to_gcode();
+      LOG(debug) << "Actual Maximum limit:" << this->max().value().to_gcode();
     }
     if (!(this->max_ && this->min_)) {
       LOG(error) << "Failed to get limits from " PRINTER;
       return false;
     }
-    return false;
+    return true;
 #else
     // it normally takes about 1000ms to connect
     std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -226,6 +229,7 @@ struct Controller::Impl {
   }
 
   bool go_home() {
+    LOG(debug) << "doing auto-home";
     // check the stream is open
     if (!this->is_connected()) {
       LOG(error) << "Internal stream is closed.";

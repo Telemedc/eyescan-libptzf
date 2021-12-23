@@ -2,6 +2,7 @@ ext = '.cpp'
 unit_tests = [
   'position',
   'controller',
+  'utils',
 ]
 integration_tests = [
   'controller',

@@ -70,7 +70,7 @@ PYBIND11_MODULE(pyptzf, m) {
     .def_readwrite("f", &ptzf::Position::f)
     .def_static("from_json", ptzf::Position::from_json)
     .def("to_json", &ptzf::Position::to_json)
-    .def_static("from_gcode", ptzf::Position::from_gcode)
+    .def_static("from_m114", ptzf::Position::from_m114)
     .def("to_gcode", &ptzf::Position::to_gcode)
     .def_static("keys", [](){
       return py::make_tuple("x", "y", "z", "f");

@@ -31,8 +31,8 @@ class TestPosition(unittest.TestCase):
 
     def test_keys(self):
         p = pyptzf.Position()
-        for k in TestPosition.KEY_ENUMS:
-            with self.subTest(k.name):
+        for k in TestPosition.KEY_STRINGS:
+            with self.subTest(k):
                 self.assertIn(k, p.keys())
         self.assertEqual(len(p.keys()), 4)
 
@@ -41,14 +41,14 @@ class TestPosition(unittest.TestCase):
 
     def test_getitem(self):
         p = pyptzf.Position(1,2,3,4)
-        for k in pyptzf.Position.keys():
-            with self.subTest(f"with enum member: {k}"):
+        for k in self.KEY_ENUMS:
+            with self.subTest(f"with enum member: {k.name}"):
                 self.assertEqual(getattr(p, k.name), p[k])
         # prefer using enums if possible in actual usage
         # (probably very slightly more effecient)
-        for k in pyptzf.Position.keys():
-            with self.subTest(f"with string: {k.name}"):
-                self.assertEqual(getattr(p, k.name), p[k.name])
+        for k in self.KEY_STRINGS:
+            with self.subTest(f"with string: {k}"):
+                self.assertEqual(getattr(p, k), p[k])
         with self.assertRaises(KeyError):
             p['potato']
 
